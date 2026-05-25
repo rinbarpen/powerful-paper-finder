@@ -16,6 +16,15 @@
 
 *（需要首次 GitHub Actions 运行成功后生效）*
 
+## 一键部署
+
+前端为纯静态页面，支持一键部署到以下平台：
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Frinbarpen%2Fpowerful-paper-finder)
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https%3A%2F%2Fgithub.com%2Frinbarpen%2Fpowerful-paper-finder)
+
+部署后前端页面会自动从 `data.json` 加载数据。确保 GitHub Actions 定时运行生成数据，或手动运行 `python main.py` 后上传 `output/papers_data.json` 到前端部署目录。
+
 ## 快速开始
 
 ### 环境要求
