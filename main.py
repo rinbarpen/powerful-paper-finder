@@ -21,7 +21,7 @@ import yaml
 from src.fetcher import PaperFetcher
 from src.reviewer import Reviewer
 from src.scorer import aggregate_scores
-from src.exporter import export
+from src.exporter import export, export_json
 
 
 def setup_logging(log_dir: Path) -> None:
@@ -214,9 +214,11 @@ async def run(config: dict, mock: bool = False, start_date: str = None, end_date
     top_papers = aggregate_scores(papers, config)
 
     output_path = export(top_papers, config)
+    json_path = export_json(top_papers, Path(config["output"]["dir"]))
 
     logger.info("=" * 60)
     logger.info(f"Run complete. Output: {output_path}")
+    logger.info(f"JSON data: {json_path}")
     logger.info(f"Total papers: {len(papers)}")
     logger.info(f"Above threshold: {len(top_papers)}")
     if top_papers:

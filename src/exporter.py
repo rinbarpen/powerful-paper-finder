@@ -3,7 +3,7 @@
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import List
+from typing import Any, List
 
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
@@ -156,3 +156,28 @@ def _auto_column_width(ws, columns):
     for col, (_, width) in enumerate(columns, 1):
         ws.column_dimensions[get_column_letter(col)].width = width
     ws.freeze_panes = "A2"
+
+
+def export_json(papers: List[dict], output_dir: Path) -> Path:
+    """Export top papers to JSON for web frontend."""
+    import json
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    path = output_dir / "papers_data.json"
+
+    def _serialize(obj: Any) -> Any:
+        if hasattr(obj, "isoformat"):
+            return obj.isoformat()
+        return str(obj)
+
+    data = {
+        "generated_at": datetime.now().isoformat(),
+        "total": len(papers),
+        "papers": papers,
+    }
+
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2, default=_serialize)
+
+    logger.info(f"Exported {len(papers)} papers to {path}")
+    return path
