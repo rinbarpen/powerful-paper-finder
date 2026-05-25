@@ -1,0 +1,18 @@
+[project]
+name = "powerful-paper-finder"
+version = "1.0.0"
+description = "Daily arXiv paper collector with dual-model AI review for innovation scoring"
+requires-python = ">=3.11"
+dependencies = [
+    "arxiv>=2.1",
+    "openai>=1.0",
+    "openpyxl>=3.1",
+    "pyyaml>=6.0",
+]
+
+[project.scripts]
+paper-finder = "main:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

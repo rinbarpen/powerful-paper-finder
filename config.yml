@@ -1,0 +1,43 @@
+# arXiv Paper Finder Configuration
+
+arxiv:
+  categories: ["cs.AI", "cs.CL", "cs.CV", "cs.LG", "cs.MA", "stat.ML"]
+  max_results: 200
+  days_back: 1
+
+models:
+  - name: "gpt-5.5"
+    api_base: "https://api.vveai.com/v1"
+    api_key: "${OPENAI_API_KEY}"
+    weight: 0.5
+    min_score: 7.0
+  - name: "DeepSeek-V4-Pro"
+    api_base: "https://api.vveai.com/v1"
+    api_key: "${DEEPSEEK_API_KEY}"
+    weight: 0.5
+    min_score: 9.0
+
+scoring:
+  min_combined: 8.5
+  top_n: 10
+  concurrency: 5
+  prompt_template: |
+    你是$model_name，一位资深的AI领域审稿专家。请对以下学术论文的创新性进行评审。
+
+    论文标题: $title
+    论文摘要: $abstract
+
+    请从以下维度评分（1-10分）：
+    1. 研究问题的前瞻性
+    2. 方法论的创新程度
+    3. 理论贡献的深度
+    4. 潜在影响力
+
+    并提取论文的关键词（3-5个）、所属研究领域，判断是否属于通用领域。
+
+    请严格按照以下JSON格式回复，不要附加其他内容：
+    {"score": <综合得分>, "reason": "<中文简短评审理由，100字以内>", "keywords": ["关键词1", "关键词2", "关键词3"], "field": "<研究领域>", "general": <true或false，是否属于通用AI/CS领域而非高度垂直的小众领域>}
+
+output:
+  dir: "./output"
+  filename_template: "arxiv_top_papers_{date}.xlsx"
