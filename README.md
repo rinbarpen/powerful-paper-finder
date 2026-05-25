@@ -20,15 +20,13 @@
 
 ## 一键部署
 
-前端位于 `frontend/` 目录，是纯静态页面，支持部署到以下平台：
+前端为纯静态页面，支持部署到以下平台。所有平台统一使用 `gh-pages` 分支（GitHub Actions 每日运行后自动将前端文件 + 数据部署到此分支）：
 
 | 平台 | 配置方式 |
 |------|----------|
-| **GitHub Pages** | Settings → Pages → Source: **Deploy from a branch** → `main` → `/frontend` |
-| **Vercel** | Import 仓库 → Framework preset: **Other** → Root Directory: `frontend/` → Deploy |
-| **Cloudflare Pages** | Create project → Connect git → Root Directory: `frontend/` → Deploy |
-
-所有平台从 `main` 分支部署，GitHub Actions 每日运行后自动将 `data.json` 提交到 `frontend/` 目录，无需手动更新。
+| **GitHub Pages** | Settings → Pages → Source: **Deploy from a branch** → `gh-pages` → `/ (root)` |
+| **Vercel** | Import 仓库 → Framework preset: **Other** → **Production Branch** 改为 `gh-pages` → Root Directory: `./` → Deploy |
+| **Cloudflare Pages** | Create project → Connect git → **Branch** 选 `gh-pages` → Root Directory: `./` → Deploy |
 
 ## 快速开始
 
@@ -98,7 +96,6 @@ python main.py --start-date 20260301 --end-date 20260531
 
 - `output/arxiv_top_papers_{date}.xlsx` — 格式化的 Excel 排行榜
 - `output/papers_data.json` — Web 前端使用的 JSON 数据
-- `frontend/data.json` — 自动提交到仓库的 Web 数据（由 Action 维护）
 - `logs/run_{date}.log` — 运行日志
 
 ## 自动部署
@@ -107,7 +104,7 @@ python main.py --start-date 20260301 --end-date 20260531
 
 1. **定时触发** — 每天北京时间 09:00 自动执行
 2. **手动触发** — 在 Actions 页面点击 Run workflow
-3. **自动更新** — 运行后将生成的 `data.json` 提交到 `frontend/` 目录
+3. **自动部署** — 运行后将前端文件 + 数据自动部署到 `gh-pages` 分支
 
 ### GitHub Secrets 配置
 
@@ -134,7 +131,7 @@ python main.py --start-date 20260301 --end-date 20260531
 ## 技术栈
 
 - **Python** — arXiv API + AsyncOpenAI + openpyxl
-- **GitHub Actions** — 定时调度 + 自动提交
+- **GitHub Actions** — 定时调度 + Pages 部署
 - **Vanilla JS** — 纯静态前端，无框架依赖
 
 ## 许可证

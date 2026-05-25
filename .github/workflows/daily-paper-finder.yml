@@ -54,12 +54,18 @@ jobs:
           path: logs/
           retention-days: 7
 
-      - name: Commit data.json to main
+      - name: Prepare deployment
         if: success()
         run: |
-          cp output/papers_data.json frontend/data.json
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git add -f frontend/data.json
-          git diff --cached --quiet || git commit -m "chore: update papers data [skip ci]"
-          git push origin main
+          mkdir -p deploy
+          cp output/papers_data.json deploy/data.json
+          cp -r frontend/* deploy/
+
+      - name: Deploy to gh-pages branch
+        if: success()
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./deploy
+          keep_files: false
+          publish_branch: gh-pages
