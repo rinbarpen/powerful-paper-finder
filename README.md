@@ -8,22 +8,27 @@
 - 🤖 **双模型评审** — 通过两个 LLM 独立评分，加权综合排名
 - 📊 **Excel 导出** — 生成格式化的评分排行榜（带条件高亮）
 - 🌐 **Web 界面** — 在线浏览论文排行榜，支持搜索与筛选
-- ⏰ **自动部署** — GitHub Actions 定时运行，自动更新 Pages
+- ⏰ **自动部署** — GitHub Actions 定时运行，自动更新数据
 
 ## 在线演示
 
-项目部署在 GitHub Pages：`https://rinbarpen.github.io/powerful-paper-finder/`
+| 平台 | 地址 |
+|------|------|
+| GitHub Pages | `https://rinbarpen.github.io/powerful-paper-finder/` |
 
-*（需要首次 GitHub Actions 运行成功后生效）*
+*（需要首次 GitHub Actions 运行成功后才有数据）*
 
 ## 一键部署
 
-前端为纯静态页面，支持一键部署到以下平台：
+前端位于 `frontend/` 目录，是纯静态页面，支持部署到以下平台：
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Frinbarpen%2Fpowerful-paper-finder)
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https%3A%2F%2Fgithub.com%2Frinbarpen%2Fpowerful-paper-finder)
+| 平台 | 配置方式 |
+|------|----------|
+| **GitHub Pages** | Settings → Pages → Source: **Deploy from a branch** → `main` → `/frontend` |
+| **Vercel** | Import 仓库 → Framework preset: **Other** → Root Directory: `frontend/` → Deploy |
+| **Cloudflare Pages** | Create project → Connect git → Root Directory: `frontend/` → Deploy |
 
-部署后前端页面会自动从 `data.json` 加载数据。确保 GitHub Actions 定时运行生成数据，或手动运行 `python main.py` 后上传 `output/papers_data.json` 到前端部署目录。
+所有平台从 `main` 分支部署，GitHub Actions 每日运行后自动将 `data.json` 提交到 `frontend/` 目录，无需手动更新。
 
 ## 快速开始
 
@@ -37,7 +42,7 @@
 ```bash
 git clone https://github.com/rinbarpen/powerful-paper-finder.git
 cd powerful-paper-finder
-pip install -e .
+pip install arxiv openai openpyxl pyyaml
 ```
 
 ### 配置
@@ -93,6 +98,7 @@ python main.py --start-date 20260301 --end-date 20260531
 
 - `output/arxiv_top_papers_{date}.xlsx` — 格式化的 Excel 排行榜
 - `output/papers_data.json` — Web 前端使用的 JSON 数据
+- `frontend/data.json` — 自动提交到仓库的 Web 数据（由 Action 维护）
 - `logs/run_{date}.log` — 运行日志
 
 ## 自动部署
@@ -101,7 +107,7 @@ python main.py --start-date 20260301 --end-date 20260531
 
 1. **定时触发** — 每天北京时间 09:00 自动执行
 2. **手动触发** — 在 Actions 页面点击 Run workflow
-3. **自动部署** — 运行后自动更新 GitHub Pages
+3. **自动更新** — 运行后将生成的 `data.json` 提交到 `frontend/` 目录
 
 ### GitHub Secrets 配置
 
@@ -113,10 +119,6 @@ python main.py --start-date 20260301 --end-date 20260531
 | `OPENAI_BASE_URL` | 第一个模型的 API 地址 |
 | `DEEPSEEK_API_KEY` | 第二个模型的 API Key |
 | `DEEPSEEK_BASE_URL` | 第二个模型的 API 地址 |
-
-### GitHub Pages 启用
-
-仓库 Settings → Pages → Source 选择 **gh-pages** 分支。
 
 ## 配置参考
 
@@ -132,7 +134,7 @@ python main.py --start-date 20260301 --end-date 20260531
 ## 技术栈
 
 - **Python** — arXiv API + AsyncOpenAI + openpyxl
-- **GitHub Actions** — 定时调度 + Pages 部署
+- **GitHub Actions** — 定时调度 + 自动提交
 - **Vanilla JS** — 纯静态前端，无框架依赖
 
 ## 许可证
