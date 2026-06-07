@@ -19,7 +19,7 @@ semantic_scholar:
   api_key: "${SEMANTIC_SCHOLAR_API_KEY}"
 
 filter:
-  model: "google/gemma-2-9b-it"
+  model: "google/gemma-4-31b-it:free"
   api_base: "https://openrouter.ai/api/v1"
   api_key: "${OPENROUTER_API_KEY}"
   top_n: 15
@@ -39,7 +39,7 @@ models:
     api_key: "${OPENAI_API_KEY}"
     weight: 0.5
     min_score: 7.0
-  - name: "DeepSeek-V4-Pro"
+  - name: "deepseek-v4-pro"
     api_base: "${DEEPSEEK_BASE_URL}"
     api_key: "${DEEPSEEK_API_KEY}"
     weight: 0.5
