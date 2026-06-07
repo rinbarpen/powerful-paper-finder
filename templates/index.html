@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>arXiv Paper Finder</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, system-ui, sans-serif; background: #f5f5f7; color: #1d1d1f; padding: 40px 20px; }
+  .container { max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 28px; font-weight: 600; margin-bottom: 4px; }
+  .subtitle { color: #86868b; font-size: 14px; margin-bottom: 32px; }
+
+  .card { background: #fff; border-radius: 12px; padding: 24px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  .card h2 { font-size: 18px; margin-bottom: 16px; }
+
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 28px; border-radius: 8px; border: none; font-size: 15px; font-weight: 500; cursor: pointer; transition: all .2s; }
+  .btn-primary { background: #0071e3; color: #fff; }
+  .btn-primary:hover { background: #0077ed; transform: translateY(-1px); }
+  .btn-primary:disabled { background: #999; cursor: not-allowed; transform: none; }
+
+  #status { margin-top: 16px; }
+  .log-line { font-family: "SF Mono", "Fira Code", monospace; font-size: 12px; color: #515154; padding: 2px 0; white-space: pre-wrap; word-break: break-all; }
+  .log-info { color: #1d1d1f; }
+  .log-warn { color: #b8860b; }
+  .log-err { color: #d32f2f; }
+  .log-done { color: #2e7d32; font-weight: 600; }
+
+  .file-list { list-style: none; }
+  .file-list li { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #e8e8ed; }
+  .file-list li:last-child { border-bottom: none; }
+  .file-list a { color: #0071e3; text-decoration: none; font-weight: 500; }
+  .file-list a:hover { text-decoration: underline; }
+  .file-date { color: #86868b; font-size: 13px; }
+
+  .pipeline { display: flex; justify-content: space-between; margin: 20px 0; gap: 8px; }
+  .step { flex: 1; text-align: center; padding: 12px 8px; border-radius: 8px; background: #f5f5f7; font-size: 13px; color: #86868b; }
+  .step.active { background: #e8f4fd; color: #0071e3; font-weight: 500; }
+  .step.arrow { background: none; flex: 0 0 auto; padding: 12px 0; color: #ccc; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>📄 arXiv Paper Finder</h1>
+  <p class="subtitle">拉取论文 → 免费模型筛选 → 双模型评审 → Excel 输出</p>
+
+  <div class="card">
+    <h2>运行流水线</h2>
+    <div class="pipeline" id="pipeline">
+      <div class="step" id="s-fetch">Fetch</div>
+      <div class="step arrow">→</div>
+      <div class="step" id="s-filter">Filter</div>
+      <div class="step arrow">→</div>
+      <div class="step" id="s-review">Review</div>
+      <div class="step arrow">→</div>
+      <div class="step" id="s-export">Export</div>
+    </div>
+    <button class="btn btn-primary" id="runBtn" onclick="runPipeline()">▶ 运行流水线</button>
+    <div id="status"></div>
+  </div>
+
+  <div class="card">
+    <h2>输出文件</h2>
+    <ul class="file-list" id="fileList">
+      {% for f in files %}
+      <li><a href="/output/{{ f }}">{{ f }}</a><span class="file-date">{{ f[13:17] }}-{{ f[17:19] }}-{{ f[19:21] }}</span></li>
+      {% endfor %}
+      {% if not files %}
+      <li style="color:#86868b">暂无输出文件，请运行流水线</li>
+      {% endif %}
+    </ul>
+  </div>
+</div>
+
+<script>
+function runPipeline() {
+  const btn = document.getElementById('runBtn');
+  const status = document.getElementById('status');
+  btn.disabled = true;
+  btn.textContent = '⏳ 运行中...';
+  status.innerHTML = '';
+
+  const evtSource = new EventSource('/run');
+  evtSource.onmessage = function(e) {
+    const data = JSON.parse(e.data);
+    if (data.done) {
+      evtSource.close();
+      btn.disabled = false;
+      btn.textContent = '▶ 运行流水线';
+      location.reload();
+      return;
+    }
+    const line = data.line;
+    const lineEl = document.createElement('div');
+    lineEl.className = 'log-line';
+    if (line.includes('WARNING') || line.includes('WARN')) {
+      lineEl.className += ' log-warn';
+    } else if (line.includes('ERROR') || line.includes('Error')) {
+      lineEl.className += ' log-err';
+    } else if (line.includes('Run complete') || line.includes('Fetched') || line.includes('Review complete')) {
+      lineEl.className += ' log-info';
+    }
+    lineEl.textContent = line;
+    status.appendChild(lineEl);
+    status.scrollTop = status.scrollHeight;
+
+    // Highlight pipeline steps
+    if (line.includes('Fetching category') || line.includes('Fetched')) {
+      document.getElementById('s-fetch').classList.add('active');
+    }
+    if (line.includes('Filter stage')) {
+      document.getElementById('s-filter').classList.add('active');
+    }
+    if (line.includes('Review complete') || line.includes('scored by')) {
+      document.getElementById('s-review').classList.add('active');
+    }
+    if (line.includes('Exported')) {
+      document.getElementById('s-export').classList.add('active');
+    }
+  };
+  evtSource.onerror = function() {
+    evtSource.close();
+    btn.disabled = false;
+    btn.textContent = '▶ 运行流水线';
+  };
+}
+</script>
+</body>
+</html>

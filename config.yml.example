@@ -1,10 +1,38 @@
 # arXiv Paper Finder Configuration
 # Copy this file to config.yml and fill in your API endpoints and keys.
 
+# Source selection: "arxiv" | "venues" | "all" (default "arxiv" for backward compat)
+source: "arxiv"
+
 arxiv:
   categories: ["cs.AI", "cs.CL", "cs.CV", "cs.LG", "cs.MA", "stat.ML"]
   max_results: 200
   days_back: 1
+
+# Venue / conference search (requires source: "venues" or "all")
+venues:
+  list: ["CVPR", "AAAI", "ICCV", "NeurIPS", "ICML", "ACL"]  # empty = all CCF-A
+  years: [2025, 2026]
+  max_results_per_venue: 100
+
+# Semantic Scholar API key (optional — improves rate limit from 100/5min to 100/sec)
+semantic_scholar:
+  api_key: "${SEMANTIC_SCHOLAR_API_KEY}"
+
+filter:
+  model: "google/gemma-2-9b-it"
+  api_base: "https://openrouter.ai/api/v1"
+  api_key: "${OPENROUTER_API_KEY}"
+  top_n: 15
+  concurrency: 10
+  prompt_template: |
+    You are a paper screening assistant. Classify this AI/CS paper and rate its relevance to AI researchers.
+
+    Title: $title
+    Abstract: $abstract
+
+    Output JSON only:
+    {"domains": ["sub-fields, e.g. NLP/CV/RL/MultiAgent/Theory"], "relevance": <1-5, relevance to general AI researchers>, "primary_field": "<most relevant field>", "reason": "<one-line justification>"}
 
 models:
   - name: "gpt-5.5"

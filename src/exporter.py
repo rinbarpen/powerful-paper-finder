@@ -27,25 +27,21 @@ THIN_BORDER = Border(
 
 FIXED_COLUMNS = [
     ("排名", 6),
-    ("arXiv ID", 14),
+    ("论文ID", 14),
     ("标题", 60),
     ("作者", 30),
+    ("来源", 10),
+    ("会议", 18),
+    ("CCF等级", 8),
     ("关键词", 24),
     ("领域", 16),
+    ("筛选领域", 16),
+    ("筛选评分", 8),
     ("通用", 6),
     ("通过", 10),
     ("分类", 16),
     ("发布日期", 12),
 ]
-
-
-def _build_columns(config: dict) -> list[tuple[str, int]]:
-    cols = list(FIXED_COLUMNS)
-    for model in config.get("models", []):
-        cols.append((f"{model['name']}评分", 14))
-    cols.append(("综合得分", 10))
-    cols.append(("评审理由", 50))
-    return cols
 
 
 def _build_columns(config: dict) -> list[tuple[str, int]]:
@@ -96,7 +92,7 @@ def _write_header(ws, columns):
 
 def _write_data(ws, papers, model_names, columns):
     num_model_cols = len(model_names)
-    final_col = 11 + num_model_cols
+    final_col = 16 + num_model_cols
     reason_col = final_col + 1
 
     for rank, paper in enumerate(papers, 1):
@@ -107,17 +103,24 @@ def _write_data(ws, papers, model_names, columns):
         _cell(ws, row, 4, ", ".join(paper["authors"][:5]) + (
             " et al." if len(paper["authors"]) > 5 else ""
         ))
-        _cell(ws, row, 5, ", ".join(paper.get("keywords", [])))
-        _cell(ws, row, 6, paper.get("field", ""))
-        _cell(ws, row, 7, "是" if paper.get("general") else "否")
-        _cell(ws, row, 8, paper.get("pass_reason", ""))
-        _cell(ws, row, 9, ", ".join(paper.get("categories", [])))
+        _cell(ws, row, 5, paper.get("source", "arxiv"))
+        venue_str = paper.get("venue", "")
+        year = paper.get("year", "")
+        _cell(ws, row, 6, f"{venue_str} {year}" if venue_str and year else venue_str or "")
+        _cell(ws, row, 7, paper.get("ccf_level", ""))
+        _cell(ws, row, 8, ", ".join(paper.get("keywords", [])))
+        _cell(ws, row, 9, paper.get("field", ""))
+        _cell(ws, row, 10, paper.get("filter_domain", ""))
+        _cell(ws, row, 11, paper.get("filter_relevance", ""))
+        _cell(ws, row, 12, "是" if paper.get("general") else "否")
+        _cell(ws, row, 13, paper.get("pass_reason", ""))
+        _cell(ws, row, 14, ", ".join(paper.get("categories", [])))
         pub = paper.get("published")
-        _cell(ws, row, 10, pub.strftime("%Y-%m-%d") if hasattr(pub, "strftime") else str(pub))
+        _cell(ws, row, 15, pub.strftime("%Y-%m-%d") if hasattr(pub, "strftime") else str(pub))
 
         scores = paper.get("model_scores", {})
         for i, name in enumerate(model_names):
-            _score_cell(ws, row, 11 + i, scores.get(name))
+            _score_cell(ws, row, 16 + i, scores.get(name))
 
         _score_cell(ws, row, final_col, paper.get("final_score", 0))
 

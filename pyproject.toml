@@ -5,9 +5,11 @@ description = "Daily arXiv paper collector with dual-model AI review for innovat
 requires-python = ">=3.11"
 dependencies = [
     "arxiv>=2.1",
+    "httpx>=0.27",
     "openai>=1.0",
     "openpyxl>=3.1",
     "pyyaml>=6.0",
+    "python-dotenv>=1.0",
 ]
 
 [project.scripts]
